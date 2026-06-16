@@ -1,0 +1,18 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "bondyield"
+version = "0.1.0"
+description = "Educational bond yield convergence demo with a C++ core and Python GUI"
+requires-python = ">=3.10"
+dependencies = [
+    "PySide6"
+]
+
+[project.scripts]
+bond-yield = "bondyield.app:main"
+
+[tool.scikit-build]
+wheel.packages = ["src/bondyield"]
