@@ -20,7 +20,7 @@ YieldResult CalcYield(double coupon, double years, double face, double price)
 {
     double C = coupon * face;
     double r = (C - (price - face) / years) / ((price + face) / 2.f); //initial guess
-    double increment = .05f;
+    double increment = r / 2.;
     double calc_price = 0.f;
     double delta = 1.f;
     bool sign = true; //false for subtract, true for add
@@ -29,25 +29,26 @@ YieldResult CalcYield(double coupon, double years, double face, double price)
     while (std::fabs(delta) > 1e-010) {
         calc_price = CalcPrice(coupon, years, face, r);
         delta = calc_price - price;
-        if (delta < 0.f) {
-            //calc was less, guess lower r
-            r -= increment;
-            if (sign) {
-                increment /= 2.f;
-                sign = false;
+        if (std::fabs(delta) > 1e-010) {
+            if (delta < 0.f) {
+                //calc was less, guess lower r
+                r -= increment;
+                if (sign) {
+                    increment /= 2.f;
+                    sign = false;
+                }
             }
-        }
-        else {
-            //calc was greater, guess higher r
-            r += increment;
-            if (!sign) {
-                increment /= 2.f;
-                sign = true;
+            else {
+                //calc was greater, guess higher r
+                r += increment;
+                if (!sign) {
+                    increment /= 2.f;
+                    sign = true;
+                }
             }
         }
         ++iterations;
-        if (iterations > 1000000)
-        {
+        if (iterations > 1000000) {
             r = -1;
             break;
         }
@@ -76,8 +77,7 @@ YieldResult CalcYieldDeeley(double rate, double n, double V, double P)
         calc_price = CalcPrice(rate, n, V, i);
         delta = calc_price - P;
         ++iterations;
-        if (iterations > 1000000)
-        {
+        if (iterations > 1000000) {
             i = -1;
             break;
         }
