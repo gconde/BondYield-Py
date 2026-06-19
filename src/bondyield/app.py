@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         self.deeley_result = QLabel("—")
 
         results_layout.addRow("Result", self.primary_result)
-        results_layout.addRow("Iterative", self.iterative_result)
+        results_layout.addRow("Step Wise", self.iterative_result)
         results_layout.addRow("Deeley", self.deeley_result)
 
         main_layout.addWidget(results_group)
