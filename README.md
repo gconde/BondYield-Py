@@ -1,5 +1,9 @@
 # BondYield-Py
 
+Educational bond price and yield calculator with a C++ core, pybind11 bindings, and PySide6 GUI.
+
+![BondYield-Py Screenshot](docs/screenshot.png)
+
 BondYield-Py is a desktop application for calculating fixed-rate bond prices and yields. The project combines a C++ bond math engine with a Python/PySide6 graphical user interface using pybind11 bindings.
 
 The application demonstrates two different yield calculation techniques and highlights the trade-offs between simplicity, convergence speed, and supported input ranges.
@@ -38,17 +42,21 @@ The bond pricing and yield calculation algorithms are implemented in C++ while t
 Currently tested on:
 
 * macOS (Apple Silicon)
-
-Additional platforms may be added as testing is completed.
+* Windows 11
+* Linux
 
 ## Installation
+
+Installation builds the C++ extension module and installs all required Python dependencies automatically.
 
 Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone git@github.com:gconde/BondYield-Py.git
 cd BondYield-Py
 ```
+
+### macOS / Linux
 
 Create and activate a virtual environment:
 
@@ -63,18 +71,42 @@ Install the package:
 pip install -e .
 ```
 
-The editable installation builds the C++ extension module and installs all required Python dependencies automatically.
+### Windows
+
+Open:
+
+```
+x64 Native Tools Command Prompt for VS 2022
+```
+
+The x64 Native Tools prompt is important because the C++ extension must be built with a 64-bit compiler to match 64-bit Python.
+
+Then run:
+
+```cmd
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e .
+```
+
+## Running Tests
+
+Install the development dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+Run the test suite:
+
+```bash
+pytest
+```
 
 ## Running the Application
 
 ```bash
 bond-yield
-```
-
-## Running Tests
-
-```bash
-pytest
 ```
 
 ## Bond Model Assumptions
@@ -142,12 +174,6 @@ The test suite includes:
 * Invalid input validation tests
 * Non-finite value (NaN and infinity) validation tests
 * Edge case regression tests
-
-Run the full test suite with:
-
-```bash
-pytest
-```
 
 ## References
 
