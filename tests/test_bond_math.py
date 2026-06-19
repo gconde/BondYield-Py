@@ -20,7 +20,7 @@ def assert_close(
 def test_price_at_par_rate_equals_face_value():
     price = _bondyield.calculate_price(
         coupon=0.05,
-        years=10.0,
+        years=10,
         face=1000.0,
         rate=0.05,
     )
@@ -29,16 +29,16 @@ def test_price_at_par_rate_equals_face_value():
 
 
 def test_yield_methods_agree_for_discount_bond():
-    iterative = _bondyield.calculate_yield_iterative(
+    iterative = _bondyield.calculate_yield_stepwise(
         coupon=0.05,
-        years=10.0,
+        years=10,
         face=1000.0,
         price=950.0,
     )
 
     deeley = _bondyield.calculate_yield_deeley(
         rate=0.05,
-        term=10.0,
+        term=10,
         value=1000.0,
         price=950.0,
     )
@@ -48,16 +48,16 @@ def test_yield_methods_agree_for_discount_bond():
 
 
 def test_yield_methods_agree_for_premium_bond():
-    iterative = _bondyield.calculate_yield_iterative(
+    iterative = _bondyield.calculate_yield_stepwise(
         coupon=0.05,
-        years=10.0,
+        years=10,
         face=1000.0,
         price=1050.0,
     )
 
     deeley = _bondyield.calculate_yield_deeley(
         rate=0.05,
-        term=10.0,
+        term=10,
         value=1000.0,
         price=1050.0,
     )
@@ -68,7 +68,7 @@ def test_yield_methods_agree_for_premium_bond():
 def test_yield_result_has_expected_fields():
     result = _bondyield.calculate_yield_deeley(
         rate=0.05,
-        term=10.0,
+        term=10,
         value=1000.0,
         price=950.0,
     )
@@ -81,9 +81,9 @@ def test_yield_result_has_expected_fields():
 
 
 def test_one_iteration_yield():
-    iterative = _bondyield.calculate_yield_iterative(
+    iterative = _bondyield.calculate_yield_stepwise(
         coupon=0.05,
-        years=10.0,
+        years=10,
         face=1000.0,
         price=1000.0,
     )
@@ -93,7 +93,7 @@ def test_one_iteration_yield():
 
     deeley = _bondyield.calculate_yield_deeley(
         rate=0.05,
-        term=10.0,
+        term=10,
         value=1000.0,
         price=1000.0,
     )
@@ -106,7 +106,7 @@ def test_one_iteration_yield():
     "coupon,years,face,price_multiplier",
     list(itertools.product(
         [0.01, 0.05, 0.20],
-        [2.0, 10.0, 30.0],
+        [2, 10, 30],
         [100.0, 1000.0],
         [0.5, 0.75, .95, 1],
     )),
@@ -119,7 +119,7 @@ def test_yield_methods_agree_across_supported_grid(
 ):
     price = face * price_multiplier
 
-    iterative = _bondyield.calculate_yield_iterative(
+    iterative = _bondyield.calculate_yield_stepwise(
         coupon=coupon,
         years=years,
         face=face,
@@ -151,7 +151,7 @@ def test_yield_methods_agree_across_supported_grid(
 
 def test_iterative_yield_reprices_supported_grid():
     coupons = [0.01, 0.05, 0.20]
-    years_values = [1.0, 2.0, 10.0, 30.0]
+    years_values = [1, 2, 10, 30]
     face_values = [100.0, 1000.0]
     price_multipliers = [0.5, 0.75, 0.95, 1.0]
 
@@ -163,7 +163,7 @@ def test_iterative_yield_reprices_supported_grid():
     ):
         price = face * price_multiplier
 
-        result = _bondyield.calculate_yield_iterative(
+        result = _bondyield.calculate_yield_stepwise(
             coupon=coupon,
             years=years,
             face=face,
@@ -197,16 +197,15 @@ def test_iterative_yield_reprices_supported_grid():
 @pytest.mark.parametrize(
     "coupon,years,face,rate",
     [
-        (float("nan"), 10.0, 1000.0, 0.05),
-        (0.05, float("nan"), 1000.0, 0.05),
-        (0.05, 10.0, float("nan"), 0.05),
-        (0.05, 10.0, 1000.0, float("nan")),
-        (0.05, 0.0, 1000.0, 0.05),
-        (0.05, -1.0, 1000.0, 0.05),
-        (0.05, 10.0, 0.0, 0.05),
-        (0.05, 10.0, -1000.0, 0.05),
-        (-0.01, 10.0, 1000.0, 0.05),
-        (0.05, 10.0, 1000.0, -1.0),
+        (float("nan"), 10, 1000.0, 0.05),
+        (0.05, 10, float("nan"), 0.05),
+        (0.05, 10, 1000.0, float("nan")),
+        (0.05, 0, 1000.0, 0.05),
+        (0.05, -1, 1000.0, 0.05),
+        (0.05, 10, 0.0, 0.05),
+        (0.05, 10, -1000.0, 0.05),
+        (-0.01, 10, 1000.0, 0.05),
+        (0.05, 10, 1000.0, -1.0),
     ],
 )
 def test_calculate_price_rejects_invalid_inputs(coupon, years, face, rate):
@@ -222,22 +221,21 @@ def test_calculate_price_rejects_invalid_inputs(coupon, years, face, rate):
 @pytest.mark.parametrize(
     "coupon,years,face,price",
     [
-        (float("nan"), 10.0, 1000.0, 950.0),
-        (0.05, float("nan"), 1000.0, 950.0),
-        (0.05, 10.0, float("nan"), 950.0),
-        (0.05, 10.0, 1000.0, float("nan")),
-        (0.05, 0.0, 1000.0, 950.0),
-        (0.05, -1.0, 1000.0, 950.0),
-        (0.05, 10.0, 0.0, 950.0),
-        (0.05, 10.0, -1000.0, 950.0),
-        (0.05, 10.0, 1000.0, 0.0),
-        (0.05, 10.0, 1000.0, -950.0),
-        (-0.01, 10.0, 1000.0, 950.0),
+        (float("nan"), 10, 1000.0, 950.0),
+        (0.05, 10, float("nan"), 950.0),
+        (0.05, 10, 1000.0, float("nan")),
+        (0.05, 0, 1000.0, 950.0),
+        (0.05, -1, 1000.0, 950.0),
+        (0.05, 10, 0.0, 950.0),
+        (0.05, 10, -1000.0, 950.0),
+        (0.05, 10, 1000.0, 0.0),
+        (0.05, 10, 1000.0, -950.0),
+        (-0.01, 10, 1000.0, 950.0),
     ],
 )
-def test_calculate_yield_iterative_rejects_invalid_inputs(coupon, years, face, price):
+def test_calculate_yield_stepwise_rejects_invalid_inputs(coupon, years, face, price):
     with pytest.raises(ValueError):
-        _bondyield.calculate_yield_iterative(
+        _bondyield.calculate_yield_stepwise(
             coupon=coupon,
             years=years,
             face=face,
@@ -248,17 +246,16 @@ def test_calculate_yield_iterative_rejects_invalid_inputs(coupon, years, face, p
 @pytest.mark.parametrize(
     "rate,term,value,price",
     [
-        (float("nan"), 10.0, 1000.0, 950.0),
-        (0.05, float("nan"), 1000.0, 950.0),
-        (0.05, 10.0, float("nan"), 950.0),
-        (0.05, 10.0, 1000.0, float("nan")),
-        (0.05, 0.0, 1000.0, 950.0),
-        (0.05, -1.0, 1000.0, 950.0),
-        (0.05, 10.0, 0.0, 950.0),
-        (0.05, 10.0, -1000.0, 950.0),
-        (0.05, 10.0, 1000.0, 0.0),
-        (0.05, 10.0, 1000.0, -950.0),
-        (-0.01, 10.0, 1000.0, 950.0),
+        (float("nan"), 10, 1000.0, 950.0),
+        (0.05, 10, float("nan"), 950.0),
+        (0.05, 10, 1000.0, float("nan")),
+        (0.05, 0, 1000.0, 950.0),
+        (0.05, -1, 1000.0, 950.0),
+        (0.05, 10, 0.0, 950.0),
+        (0.05, 10, -1000.0, 950.0),
+        (0.05, 10, 1000.0, 0.0),
+        (0.05, 10, 1000.0, -950.0),
+        (-0.01, 10, 1000.0, 950.0),
     ],
 )
 def test_calculate_yield_deeley_rejects_invalid_inputs(rate, term, value, price):

@@ -2,9 +2,6 @@
 
 #include <cstdint>
 
-/*!
- * Very large values will cause low accurcy results??
- */
 namespace BondMath {
 
     struct YieldResult {
@@ -14,39 +11,64 @@ namespace BondMath {
     };
 
     /*!
-     * Calculates the present value of the bond.
+     * Calculates the present value of a fixed-rate coupon bond.
      *
-     * \param coupon Rate per period.
-     * \param years The term to maturity in interest (or rate) periods.
-     * \param face The redemption value of the bond.
-     * \param rate Annual rate of reinvestment.
-     * \return The present value of the bond.
+     * Inputs are expressed per period. For example, a 5% coupon rate
+     * should be passed as 0.05.
+     *
+     * Throws std::invalid_argument for invalid or non-finite inputs.
+     *
+     * \param coupon Coupon rate per period.
+     * \param years Number of remaining periods to maturity.
+     * \param face Redemption value of the bond.
+     * \param rate Discount rate per period.
+     * \return Present value of the bond.
      */
-    double CalcPrice(double coupon, double years, double face, double rate);
+    double CalcPrice(double coupon, int years, double face, double rate);
 
     /*!
-     * Calculates the bond yield using an iterative approach. Approaches
-     * the correct yield by adding/subtracting to the rate based on the difference
-     * to the correct price by an amount that gets smaller.
+     * Calculates bond yield using a simple stepwise search.
      *
-     * \param coupon Rate per period.
-     * \param years The term to maturity in interest (or rate) periods.
-     * \param face The redemption value of the bond.
-     * \param price The purchase price of the bond.
-     * \return The yield.
+     * This method starts with an approximate yield and adjusts it up or
+     * down until the calculated price matches the target price within the
+     * implementation tolerance.
+     *
+     * Returns YieldResult::yield_value == -1.0 if the search does not
+     * converge within the iteration limit.
+     *
+     * Throws std::invalid_argument for invalid or non-finite inputs.
+     *
+     * \param coupon Coupon rate per period.
+     * \param years Number of remaining periods to maturity.
+     * \param face Redemption value of the bond.
+     * \param price Purchase price of the bond.
+     * \return Yield result, including yield, iteration count, and timing.
      */
-    YieldResult CalcYield(double coupon, double years, double face, double price);
+    YieldResult CalcYield(double coupon, int years, double face, double price);
 
     /*!
-     * Calculates the bond yield.
-     * Uses algorithm described here: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1253166
-     * Basically better than Newton's Method as it converges faster.
+     * Calculates bond yield using Deeley's method.
      *
-     * \param rate Rate per period.
-     * \param n The term to maturity in interest (or rate) periods.
-     * \param V The redemption value of the bond.
-     * \param P The purchase price of the bond.
-     * \return The yield.
+     * Deeley's method is described in:
+     * "Superseding Newton with a superior bond yield algorithm"
+     * by Chris Deeley.
+     *
+     * This demo uses Deeley's method for ordinary positive-yield coupon
+     * bond examples. Some edge cases are intentionally treated as outside
+     * the supported demo range.
+     *
+     * Returns YieldResult::yield_value == -1.0 if the calculation does not
+     * converge within the iteration limit.
+     *
+     * Throws std::invalid_argument for invalid or non-finite inputs.
+     * Throws std::runtime_error if the calculation reaches an unsupported
+     * numerical condition.
+     *
+     * \param rate Coupon rate per period.
+     * \param n Number of remaining periods to maturity.
+     * \param V Redemption value of the bond.
+     * \param P Purchase price of the bond.
+     * \return Yield result, including yield, iteration count, and timing.
      */
-    YieldResult CalcYieldDeeley(double rate, double n, double V, double P);
+    YieldResult CalcYieldDeeley(double rate, int n, double V, double P);
 }

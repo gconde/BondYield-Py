@@ -17,7 +17,7 @@ PYBIND11_MODULE(_bondyield, m)
         py::arg("years"),
         py::arg("face"),
         py::arg("rate"));
-    m.def("calculate_yield_iterative", &BondMath::CalcYield,
+    m.def("calculate_yield_stepwise", &BondMath::CalcYield,
         py::arg("coupon"),
         py::arg("years"),
         py::arg("face"),

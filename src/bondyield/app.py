@@ -4,6 +4,7 @@ from bondyield import _bondyield
 from PySide6.QtWidgets import (
     QApplication,
     QDoubleSpinBox,
+    QSpinBox,
     QFormLayout,
     QGroupBox,
     QLabel,
@@ -24,10 +25,6 @@ class MainWindow(QMainWindow):
         central = QWidget()
         main_layout = QVBoxLayout(central)
 
-        title = QLabel("BondYield-Py")
-        title.setStyleSheet("font-size: 22px; font-weight: bold;")
-        main_layout.addWidget(title)
-
         inputs_group = QGroupBox("Bond Inputs")
         self.inputs_layout = QFormLayout(inputs_group)
 
@@ -42,10 +39,9 @@ class MainWindow(QMainWindow):
         self.coupon_rate.setDecimals(4)
         self.coupon_rate.setSuffix(" %")
 
-        self.years = QDoubleSpinBox()
-        self.years.setRange(1, 30.0)
-        self.years.setValue(10.0)
-        self.years.setDecimals(2)
+        self.years = QSpinBox()
+        self.years.setRange(1, 30)
+        self.years.setValue(10)
 
         self.rate_or_price = QDoubleSpinBox()
         self.rate_or_price.setRange(0.0, 1_000_000_000.0)
@@ -139,13 +135,15 @@ class MainWindow(QMainWindow):
         else:
             price = input_value
 
-            iterative = _bondyield.calculate_yield_iterative(
+            iterative = _bondyield.calculate_yield_stepwise(
                 face=face,
                 price=price,
                 coupon=coupon,
                 years=years,
             )
 
+            # Deeley's method is shown only for the demo's supported input range.
+            # Stepwise yield is still calculated for wider valid inputs.
             if self.is_deeley_supported(coupon, years, face, price):
                 deeley = _bondyield.calculate_yield_deeley(
                     value=face,
