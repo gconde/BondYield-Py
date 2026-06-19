@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
         self.coupon_rate.setSuffix(" %")
 
         self.years = QDoubleSpinBox()
-        self.years.setRange(0.01, 100.0)
+        self.years.setRange(1, 30.0)
         self.years.setValue(10.0)
         self.years.setDecimals(2)
 
@@ -93,13 +93,14 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
 
         self._last_result = dict()
-        self.calculate_price_radio.toggled.connect(self.update_mode_label)
-        self.update_mode_label()
+        self.calculate_price_radio.toggled.connect(self.update_mode)
+        self.update_mode()
 
-    def update_mode_label(self) -> None:
+    def update_mode(self) -> None:
         if self.calculate_price_radio.isChecked():
             self.rate_or_price_label.setText("Rate")
             self.rate_or_price.setSuffix(" %")
+            self.rate_or_price.setRange(0.0, 100.0)
             if 'rate' in self._last_result.keys():
                 self.rate_or_price.setValue(self._last_result['rate'])
             else:
@@ -108,10 +109,18 @@ class MainWindow(QMainWindow):
             self._last_result['rate'] = self.rate_or_price.value()
             self.rate_or_price_label.setText("Price")
             self.rate_or_price.setSuffix("")
+            self.rate_or_price.setRange(0.01, 1_000_000_000.0)
             if 'price' in self._last_result.keys():
                 self.rate_or_price.setValue(round(self._last_result['price'], 2))
             else:
                 self.rate_or_price.setValue(950.0)
+
+    def is_deeley_supported(self, coupon: float, years: float, face: float, price: float) -> bool:
+        return (
+                years >= 2.0
+                and coupon >= 0.01
+                and face * 0.5 <= price <= face
+        )
 
     def calculate(self) -> None:
         face = self.face_value.value()
@@ -137,25 +146,34 @@ class MainWindow(QMainWindow):
                 years=years,
             )
 
-            deeley = _bondyield.calculate_yield_deeley(
-                value=face,
-                price=price,
-                rate=coupon,
-                term=years,
-            )
-            self._last_result['rate'] = deeley.yield_value * 100.0
+            if self.is_deeley_supported(coupon, years, face, price):
+                deeley = _bondyield.calculate_yield_deeley(
+                    value=face,
+                    price=price,
+                    rate=coupon,
+                    term=years,
+                )
+                self._last_result['rate'] = deeley.yield_value * 100.0
+                if abs(deeley.yield_value - iterative.yield_value) < 1e-5:
+                    self.primary_result.setText('Algorithms agree!')
+                else:
+                    self.primary_result.setText('Algorithm yield result is different.')
+                self.deeley_result.setText(
+                    f"{deeley.yield_value * 100.0:.4f} % | "
+                    f"{deeley.iterations} iterations | "
+                    f"{deeley.elapsed_nanoseconds / 1_000_000.0:.4f} ms"
+                )
+            else:
+                self.deeley_result.setText("Not supported for this input range")
+                self.primary_result.setText('-')
+                self._last_result['rate'] = iterative.yield_value * 100.0
 
-            self.primary_result.setText(f"{deeley.yield_value * 100.0:.4f} %")
             self.iterative_result.setText(
                 f"{iterative.yield_value * 100.0:.4f} % | "
                 f"{iterative.iterations} iterations | "
                 f"{iterative.elapsed_nanoseconds / 1_000_000.0:.4f} ms"
             )
-            self.deeley_result.setText(
-                f"{deeley.yield_value * 100.0:.4f} % | "
-                f"{deeley.iterations} iterations | "
-                f"{deeley.elapsed_nanoseconds / 1_000_000.0:.4f} ms"
-            )
+
 
 
 def main() -> None:

@@ -16,3 +16,6 @@ bond-yield = "bondyield.app:main"
 
 [tool.scikit-build]
 wheel.packages = ["src/bondyield"]
+
+[project.optional-dependencies]
+dev = ["pytest"]

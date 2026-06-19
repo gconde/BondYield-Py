@@ -2,11 +2,18 @@
 
 #include <chrono>
 #include <cmath>
+#include <stdexcept>
 
 namespace BondMath {
 
 double CalcPrice(double coupon, double years, double face, double rate)
 {
+    if (!std::isfinite(coupon) || !std::isfinite(years) || !std::isfinite(face) || !std::isfinite(rate)) {
+        throw std::invalid_argument("Non-finite input detected.");
+    }
+    if (!(coupon >= 0. && years > 0. && face > 0. && rate > -1.)) {
+        throw std::invalid_argument("Invalid input range detected.");
+    }
     double r = 1.f + rate;
     double C = coupon * face;
     double price = face / std::pow(r, years);
@@ -18,6 +25,12 @@ double CalcPrice(double coupon, double years, double face, double rate)
 
 YieldResult CalcYield(double coupon, double years, double face, double price)
 {
+    if (!std::isfinite(coupon) || !std::isfinite(years) || !std::isfinite(face) || !std::isfinite(price)) {
+        throw std::invalid_argument("Non-finite input detected.");
+    }
+    if (!(coupon >= 0. && years > 0. && face > 0. && price > 0.)) {
+        throw std::invalid_argument("Invalid input range detected.");
+    }
     double C = coupon * face;
     double r = (C - (price - face) / years) / ((price + face) / 2.f); //initial guess
     double increment = r / 2.;
@@ -65,6 +78,12 @@ YieldResult CalcYield(double coupon, double years, double face, double price)
 
 YieldResult CalcYieldDeeley(double rate, double n, double V, double P)
 {
+    if (!std::isfinite(rate) || !std::isfinite(n) || !std::isfinite(V) || !std::isfinite(P)) {
+        throw std::invalid_argument("Non-finite input detected.");
+    }
+    if (!(rate >= 0. && n > 0. && V > 0. && P > 0.)) {
+        throw std::invalid_argument("Invalid input range detected.");
+    }
     auto start = std::chrono::steady_clock::now();
     double calc_price = 0.f;
     double delta = 1.f;
@@ -72,6 +91,9 @@ YieldResult CalcYieldDeeley(double rate, double n, double V, double P)
     double C = rate * V;
     double i = (C - (P - V) / n) / ((P + V) / 2.f); //initial guess
     while (std::fabs(delta) > 1e-010) {
+        if (std::fabs(i) < 0.0000001) {
+            throw std::runtime_error("Calculation failed.");
+        }
         double FV = C * ((std::pow(1.f + i, n) - 1.f) / i) + V;
         i = std::pow(FV / P, 1.f / n) - 1.f;
         calc_price = CalcPrice(rate, n, V, i);
